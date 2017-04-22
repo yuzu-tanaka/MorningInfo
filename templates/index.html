@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% block content %}
+<script type="text/javascript">
+/**
+ * 日付をフォーマットする
+ * @param  {Date}   date     日付
+ * @param  {String} [format] フォーマット
+ * @return {String}          フォーマット済み日付
+ */
+var formatDate = function (date, format) {
+  if (!format) format = 'YYYY-MM-DD hh:mm:ss.SSS';
+  format = format.replace(/YYYY/g, date.getFullYear());
+  format = format.replace(/MM/g, ('0' + (date.getMonth() + 1)).slice(-2));
+  format = format.replace(/DD/g, ('0' + date.getDate()).slice(-2));
+  format = format.replace(/hh/g, ('0' + date.getHours()).slice(-2));
+  format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2));
+  format = format.replace(/ss/g, ('0' + date.getSeconds()).slice(-2));
+  if (format.match(/S/g)) {
+    var milliSeconds = ('00' + date.getMilliseconds()).slice(-3);
+    var length = format.match(/S/g).length;
+    for (var i = 0; i < length; i++) format = format.replace(/S/, milliSeconds.substring(i, i + 1));
+  }
+  return format;
+}
+function makeClock() {
+    return formatDate(new Date(),'MM/DD &nbsp;&nbsp; hh:mm:ss')
+    //var nowTime = new Date();
+    //var nowHour = nowTime.getHours();
+    //if (nowHour<10){nowHour = '0' + nowHour;}
+    //var nowMin = nowTime.getMinutes();
+    //if (nowMin<10){nowMin = '0' + nowMin;}
+    //var nowSec = nowTime.getSeconds();
+    //if (nowSec<10){nowSec = '0' + nowSec;}
+    //var msg = nowHour + ":" + nowMin + ":" + nowSec;
+    //return msg
+}
+function showClock() {
+   document.getElementById("RealtimeClockArea").innerHTML = makeClock();
+}
+setInterval('showClock()',1000);
+</script>
+<table border="0" width="100%">
+    <tr>
+        <td colspan="2">
+        <p id="RealtimeClockArea"><script type="text/javascript">document.write(makeClock());</script></p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+          <img src="{{icon}}" width="256" />
+        </td>
+        <td align="right">
+          <span class="dayAndTelop">{{day}}</span>の天気：&nbsp;&nbsp;&nbsp;&nbsp;<span class="dayAndTelop">{{telop}}</span><br />
+          {% if tempeMax %}
+              最高気温：&nbsp;<span class="tempeMax">{{tempeMax}}</span>℃&nbsp;&nbsp;&nbsp;&nbsp;
+          {% endif %}
+          {% if tempeMin %}
+              最低気温：&nbsp;<span class="tempeMin">{{tempeMin}}</span>℃<br />
+          {% endif %}
+              <!-- <span class="message">{{message}}</span> -->
+        </td>
+    {% if train %}
+    <tr>
+        <td>
+          <img src="/static/info.png" />
+        </td>
+        <td>
+          {{train}}
+        </td>
+    {% endif %}
+    </tr>
+</table>
+{% endblock %}

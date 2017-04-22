@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="600;URL=/">
+    <style>
+    body {
+        background: #000000;
+        color: #ffffff;
+        font-family: Meiryo;
+        {% if train %}
+        font-size:1.5em;
+        {% else %}
+        font-size:1.4em;
+        {% endif %}
+	} 
+    img {
+        -webkit-filter: invert(100%);
+        {% if train %}height: 180px; width: 180px; {% else %} height: 256px; width: 256px; {% endif %}
+    }
+    #RealtimeClockArea {
+        font-size: 78px;
+        font-weight: bold;
+        line-height: 0;
+        text-align: right;
+    }
+    span.dayAndTelop {
+        font-size: 4em;
+        // font-weight: bold;
+        color: white;
+        text-align: right;
+    }
+    span.tempeMax {
+        font-size: 4em;
+        font-weight: bold;
+        color: orange;
+    }
+    span.tempeMin {
+        font-size: 4em;
+        font-weight: bold;
+        color: cyan;
+    }
+    span.message {
+        font-size: 0.5em;
+        line-height: 0.5;
+        color: white;
+    }
+	</style>
+      <title>{{ title }}</title>
+  </head>
+  <body>
+    {% block content %}{% endblock %}
+  </body>
+</html>
