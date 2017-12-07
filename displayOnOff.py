@@ -9,13 +9,15 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(18, GPIO.IN)
 
 def hdmiOff():
-  cmd = 'tvservice -o'
+  #cmd = 'tvservice -o' # for HDMI
+  cmd = 'xset dpms force off' # for Raspberry Pi official display
   subprocess.call( cmd, shell=True)
 
 def hdmiOn():
-  cmd = 'tvservice --preferred > /dev/null'
-  subprocess.call( cmd, shell=True)
-  cmd = 'fbset -depth 8; fbset -depth 32; xrefresh'
+  #cmd = 'tvservice --preferred > /dev/null'
+  #subprocess.call( cmd, shell=True)
+  #cmd = 'fbset -depth 8; fbset -depth 32; xrefresh'
+  cmd = 'xset dpms force on' # for Raspberry Pi official display
   subprocess.call( cmd, shell=True)
   print('Powering on HDMI')
 
@@ -24,7 +26,7 @@ statGPIO = 0
 retGPIO = 0
 time1 = time.time()
 time2 = time.time()
-timeRaps = 10 if isDevelop == True else 30
+timeRaps = 10 if isDevelop == True else 600
 
 print('Starting HDMI Control')
 print('Develop Mode: ',isDevelop, 'time Raps: ',timeRaps)
