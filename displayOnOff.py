@@ -3,10 +3,17 @@ import RPi.GPIO as GPIO
 import subprocess
 import time
 
-isDevelop = False
+isDevelop = False #True
+#isDevelop = True
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(18, GPIO.IN)
+
+f = open('text.txt', 'w') # 書き込みモードで開く
+
+def xset_s_off():
+  cmd = 'xset s off' # for Raspberry Pi official display
+  subprocess.call( cmd, shell=True)
 
 def hdmiOff():
   #cmd = 'tvservice -o' # for HDMI
@@ -21,6 +28,7 @@ def hdmiOn():
   subprocess.call( cmd, shell=True)
   print('Powering on HDMI')
 
+#xset_s_off()
 hdmiOff()
 statGPIO = 0
 retGPIO = 0
@@ -43,12 +51,15 @@ while True:
     time1 = time.time()
     retGPIO = 0
     statGPIO = 1 
+    f.writelines('HDMI ON  :' + str(time1)+'\n') # 引数の文字列をファイルに書き込む
   elif retGPIO == 0 and retGPIO != statGPIO and time3 >= timeRaps:
     hdmiOff()
     time1 = time.time()
     retGPIO = 0
     statGPIO = 0
+    f.writelines('HDMI OFF :' + str(time1)+'\n') # 引数の文字列をファイルに書き込む
   elif retGPIO==1 and statGPIO==1 and time3 >= timeRaps:
     time1 = time.time()
     retGPIO = 0
+    f.writelines('HDMI --- :' + str(time1)+'\n') # 引数の文字列をファイルに書き込む
 

@@ -1,7 +1,8 @@
 #!/bin/bash
 	
         #Turn off Power saver and Screen Blanking
-	xset s off -dpms
+	#xset s off -dpms
+	xset s off
 
 	#Execute MorningInfo 
 	echo "Start MorningInfo"
