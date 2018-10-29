@@ -8,40 +8,8 @@ from rgbmatrix import RGBMatrix, RGBMatrixOptions
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
-import RPi.GPIO as GPIO
-import pdb
 
 dotMatrixSize = (64,32)
-class senser:
-    def __init__(self):
-        #pdb.set_trace()
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(12,GPIO.IN)
-        self.status = 0
-        self.offOnTime = time.time()
-        self.onOffTime = time.time()
-    def checkStatus(self):
-        statusNow = GPIO.input(12)
-        if statusNow == 1:
-           self.offOnTime = time.time()
-           self.status = statusNow
-           return 1
-        elif statusNow == 0 and statusNow != self.status:
-           self.onOffTime = time.time()
-           self.status = statusNow
-           return 1
-        elif statusNow == 0 and statusNow == self.status:
-           laps = time.time() - self.onOffTime
-           #print(laps)
-           if laps > 300:
-               self.status = statusNow
-               return 0
-           else:
-               self.status = statusNow
-               return 1
-        else:
-           return 1
-
 
 class dotMatrix:
     def __init__(self):
@@ -77,7 +45,7 @@ class dotMatrix:
     def drawText(self,text,pos):
         self.draw = ImageDraw.Draw(self.img)
         self.draw.text(pos,text,self.colorOrange,font=self.bitmapFont)
-    def drawTime(self,pos = (24,10)):# pos = (24,0)
+    def drawTime(self,pos = (24,0)):
         d = datetime.datetime.today()
         timeT = d.strftime("%H:%M")
         if d.second%2 == 0: timeT += "."
@@ -88,14 +56,11 @@ class dotMatrix:
         monthT = d.strftime("%m")
         dayT = d.strftime("%d")
         self.draw = ImageDraw.Draw(self.img)
-        #self.draw.text(pos,monthT,self.colorOrange,font=self.bitmapFont)
-        #self.draw.text((pos[0],(32-pos[1])/2),dayT,self.colorOrange,font=self.bitmapFont)
-        monthDayT = monthT +"/" + dayT
-        self.draw.text(pos,monthDayT,self.colorOrange,font=self.misakiFont)
+        self.draw.text(pos,monthT,self.colorOrange,font=self.bitmapFont)
+        self.draw.text((pos[0],(32-pos[1])/2),dayT,self.colorOrange,font=self.bitmapFont)
     def drawMatrix(self):
         self.matrix.SetImage(self.img.convert('RGB'))
 
-SS = senser()
 DM = dotMatrix()
 
 print("Press CTRL-C to stop.")
@@ -110,7 +75,7 @@ while True:
         #DM.drawText(hour2,[2,2])
         DM.drawTime()
         DM.drawDate()
-        if SS.checkStatus() == 0: DM.clearCanvas() #
+        
         DM.drawMatrix()
         time.sleep(1)
     except KeyboardInterrupt:
