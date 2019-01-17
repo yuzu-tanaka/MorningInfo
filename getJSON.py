@@ -9,7 +9,7 @@ def getWether(citycode= '140010'):
     #citycode = '130010' #東京
     request = urllib.request.Request('http://weather.livedoor.com/forecast/webservice/json/v1?city=%s'%citycode)
     resp = urllib.request.urlopen(request).read().decode()
-    
+    #pdb.set_trace()
     # 読み込んだJSONデータをディクショナリ型に変換
     resp = json.loads(resp)
     

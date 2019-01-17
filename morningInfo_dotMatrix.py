@@ -11,7 +11,10 @@ from PIL import ImageFont
 import RPi.GPIO as GPIO
 import pdb
 
+from getJSON2 import *
+
 dotMatrixSize = (64,32)
+
 class senser:
     def __init__(self):
         #pdb.set_trace()
@@ -47,6 +50,8 @@ class dotMatrix:
     def __init__(self):
         self.misakiFont = ImageFont.truetype(
           "/home/pi/Develop/fonts/misaki_gothic.ttf",8)
+        self.misakiFont10 = ImageFont.truetype(
+          "/home/pi/Develop/fonts/misaki_gothic.ttf",10)
         self.bitmapFont = ImageFont.load(
           "/home/pi/Develop/fonts/shnm6x12a.pil")
         self.bitmapBoldFont = ImageFont.load(
@@ -59,6 +64,8 @@ class dotMatrix:
         self.colorGreen = (0,255,0)
         self.colorBlue = (0,0,255)
         self.colorOrange = (255,127,0)
+        self.firstTime = 0
+        self.tempText = ""
 
         # Configuration for the matrix
         options = RGBMatrixOptions()
@@ -77,14 +84,51 @@ class dotMatrix:
     def drawText(self,text,pos):
         self.draw = ImageDraw.Draw(self.img)
         self.draw.text(pos,text,self.colorOrange,font=self.bitmapFont)
-    def drawTime(self,pos = (24,10)):# pos = (24,0)
-        d = datetime.datetime.today()
+
+    def drawTemp(self,pos = (0,25)):
+        d = datetime.today()
+        def outputText():
+            respW = getWether('140010')
+            respT = getTrainDelay()
+            day = respW['day']
+            message = respW['message']
+            telop = respW['telop']
+            icon = '/static/wetherIcons/'+ respW['icon'] + '.png'
+            tempeMax = respW['max']
+            tempeMin = respW['min']
+            
+            self.tempText = tempeMin + " / " + tempeMax
+            #~ return self.tempText
+        
+        if self.firstTime  == 0:
+            #~ text = outputText()
+            outputText()
+            self.firstTime  = 1
+        elif int(d.strftime("%M"))%5 == 0 and d.strftime("%S") ==0:
+            #~ text = outputText()
+            outputText()
+        self.draw = ImageDraw.Draw(self.img)
+        self.draw.text(pos,self.tempText,self.colorOrange,font=self.misakiFont)
+
+    def drawTime(self,pos = (0,10)):# pos = (24,0)
+        #~ d = datetime.datetime.today()
+        d = datetime.today()
         timeT = d.strftime("%H:%M")
+        if len(d.strftime("%H"))==2:
+            timeH = d.strftime("%H")[0]+" "+d.strftime("%H")[1]
+        else:
+            timeH = d.strftime("%H")
+        if len(d.strftime("%M"))==2:
+            timeM = d.strftime("%M")[0]+" "+d.strftime("%M")[1]
+        else:
+            timeM = d.strftime("%M")    
+        timeT = timeH + " : " + timeM
         if d.second%2 == 0: timeT += "."
         self.draw = ImageDraw.Draw(self.img)
         self.draw.text(pos,timeT,self.colorOrange,font=self.bitmapBoldFont)
     def drawDate(self,pos = (5,0)):
-        d = datetime.datetime.today()
+        #~ d = datetime.datetime.today()
+        d = datetime.today()
         monthT = d.strftime("%m")
         dayT = d.strftime("%d")
         self.draw = ImageDraw.Draw(self.img)
@@ -101,7 +145,8 @@ DM = dotMatrix()
 print("Press CTRL-C to stop.")
 while True:
     try:
-        d = datetime.datetime.today()
+        #~ d = datetime.datetime.today()
+        d = datetime.today()
         date = u'%s年%s月%s日' % (d.year, d.month, d.day)
         hour = u'%s:%s:%s' % (d.hour, d.minute, d.second)
         dh = d.strftime("%Y-%m-%d %H:%M:%S")
@@ -110,6 +155,9 @@ while True:
         #DM.drawText(hour2,[2,2])
         DM.drawTime()
         DM.drawDate()
+
+        DM.drawTemp()
+
         if SS.checkStatus() == 0: DM.clearCanvas() #
         DM.drawMatrix()
         time.sleep(1)
