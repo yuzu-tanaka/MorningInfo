@@ -1,59 +1,76 @@
-#encoding:utf-8
-import urllib2, sys
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import urllib.request, urllib.error
+import sys
 import json
 from datetime import datetime
 import pdb
 def getWether(citycode= '140010'):
-    retval = {}
+    retval = {'title':'-','message':'-','day':'-','telop':'-','icon':'-','max':'-','min':'-'}
     forecasts = {}
-    #citycode = '130010' #東京
-    resp = urllib2.urlopen('http://weather.livedoor.com/forecast/webservice/json/v1?city=%s'%citycode).read()
-    #pdb.set_trace()
-    
-    # 読み込んだJSONデータをディクショナリ型に変換
-    resp = json.loads(resp)
-    
-    retval['title']=resp['title']
-    retval['message']=resp['description']['text']
-    retday = ('今日',0)
-    #15時以降は、明日の天気を表示する
-    if int(datetime.now().strftime('%H')) >= 15: retday = ('明日',1) 
-    retval['day']=retday[0]
-    forecast = resp['forecasts'][retday[1]]
+    try:
+      #citycode = '130010' #東京
+      resp = urllib.request.urlopen('http://weather.livedoor.com/forecast/webservice/json/v1?city=%s'%citycode).read()
+      #pdb.set_trace()
+    except:
+      resp = ''
+    if resp != '':
+      # 読み込んだJSONデータをディクショナリ型に変換
+      #resp = json.loads(resp)
+      #cont = json.loads(resp.read().decode('utf8'))
+      cont = json.loads(resp.decode('utf8'))
+      
+      retval['title']=cont['title']
+      retval['message']=cont['description']['text']
+      retday = ('今日',0)
+      #15時以降は、明日の天気を表示する
+      if int(datetime.now().strftime('%H')) >= 15: retday = ('明日',1) 
+      retval['day']=retday[0]
+      forecast = cont['forecasts'][retday[1]]
 
-    retval['telop']=forecast['telop']
-    #livedoorのIconファイル名からIcon番号を作成
-    rettmp = forecast['image']['url'].split('/')
-    rettmp = rettmp[-1].split('.')[0]
-    retval['icon']=rettmp
+      retval['telop']=forecast['telop']
+      #livedoorのIconファイル名からIcon番号を作成
+      rettmp = forecast['image']['url'].split('/')
+      rettmp = rettmp[-1].split('.')[0]
+      retval['icon']=rettmp
     
-    if None != forecast['temperature']['max']:
+      if None != forecast['temperature']['max']:
         retval['max']=forecast['temperature']['max']['celsius']
-    else:
+      else:
         retval['max']=None
-    if None != forecast['temperature']['min']:
+      if None != forecast['temperature']['min']:
         retval['min']=forecast['temperature']['min']['celsius']
-    else:
+      else:
         retval['min']=None
+
     return retval
 
 def getTrainDelay(target=[u'湘南新宿ライン',u'東海道線',u'横須賀線',u'京浜東北線']):
-    retval=''
-    delays = urllib2.urlopen('https://rti-giken.jp/fhc/api/train_tetsudo/delay.json').read()
-    
-    delays = json.loads(delays)
+    retList = []
+    retText = ""
+    retval = []
+    try:
+      resp = urllib.request.urlopen('https://rti-giken.jp/fhc/api/train_tetsudo/delay.json').read()
+    except:
+        resp =  ''
 
-    infoCount = 0
-    for delay in delays:
-        if delay['name'] in target:
-            retval+=delay['name'] + ', '
-            infoCount += 1
-    if infoCount == 0: 
-        #retval='現在関連する電車の遅延などは無いようです。'
-        retval=None
-    else:
-        retval = retval[:-2]+'の運転が遅延しているようです。'
-    return retval
+    if resp != '':
+      #delays = json.loads(delays)
+      delays = json.loads(resp.decode('utf8'))
+
+      infoCount = 0
+      for delay in delays:
+          if delay['name'] in target:
+              retText+=delay['name'] + ', '
+              retList.append(delay['name'])
+              infoCount += 1
+      if infoCount == 0: 
+          #retText='現在関連する電車の遅延などは無いようです。'
+          retText=None
+      else:
+          retText = retText[:-2]+'の運転が遅延しているようです。'
+    return [retList,retText]
 
 
 if __name__ == '__main__':
