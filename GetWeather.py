@@ -38,7 +38,11 @@ class getWeather():
             
             for item in soup.find_all("item"):
                 title = item.find("title").string
-                description = item.find("description").string
+                #description = item.find("description").string
+                description = item.find("description").string[:-1]
+                slashNo = description.find('/')
+                description = description[:slashNo-1] + " / " + description[slashNo+1]
+                #description = item.find("description").string.replace(" ","")
                 if title.find("[ PR ]") == -1:
                     self.tenki.append(title)
                     self.detail.append(description)

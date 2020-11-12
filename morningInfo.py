@@ -68,15 +68,15 @@ class senser:
 class dotMatrix:
     def __init__(self):
         self.misakiFontS = ImageFont.truetype(
-          "/home/pi/Develop/MorningInfo/fonts/misaki_gothic.ttf",6)
+          "./fonts/misaki_gothic.ttf",6)
         self.misakiFont = ImageFont.truetype(
-          "/home/pi/Develop/MorningInfo/fonts/misaki_gothic.ttf",8)
+          "./fonts/misaki_gothic.ttf",8)
         self.misakiFont10 = ImageFont.truetype(
-          "/home/pi/Develop/MorningInfo/fonts/misaki_gothic.ttf",10)
+          "./fonts/misaki_gothic.ttf",10)
         self.bitmapFont = ImageFont.load(
-          "/home/pi/Develop/MorningInfo/fonts/shnm6x12a.pil")
+          "./fonts/shnm6x12a.pil")
         self.bitmapBoldFont = ImageFont.load(
-          "/home/pi/Develop/MorningInfo/fonts/shnm6x12ab.pil")
+          "./fonts/shnm6x12ab.pil")
         self.img = Image.new("RGBA", dotMatrixSize)
         #self.canvas = ImageDraw.Draw(img)
         self.img_size = np.array(self.img.size) 
@@ -127,7 +127,7 @@ class dotMatrix:
         if d2 != None:
             diffTime = d1 - d2
             if isDebug: print("diffTime-seconds", diffTime.seconds)
-            if diffTime.seconds >= 10800: # ③時間以上の時間差があれば、天気予報をアップデート
+            if diffTime.seconds >= 10800: # ３時間以上の時間差があれば、天気予報をアップデート
                 WT.update()
         else:
             WT.update()
@@ -140,9 +140,10 @@ class dotMatrix:
         else:
             weatherText = WT.detail[0]
         self.draw = ImageDraw.Draw(self.img)
+        #self.draw.text(pos,weatherText,self.colorOrange,font=self.misakiFont10)
         self.draw.text(pos,weatherText,self.colorOrange,font=self.misakiFont)
 
- 
+
     def drawTemp(self,pos = (0,25)):
         d = datetime.today()
         def outputText():
