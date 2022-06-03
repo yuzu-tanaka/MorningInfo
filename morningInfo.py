@@ -3,7 +3,7 @@
 isDebug = True
 
 import time
-import datetime
+from datetime import datetime as dt
 import sys
 import numpy as np
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
@@ -18,6 +18,7 @@ from GetWeather import *
 from GetTrain import *
 
 WT = getWeather()
+TR = train()
 dotMatrixSize = (64,32)
 
 class senser:
@@ -105,8 +106,23 @@ class dotMatrix:
     def drawText(self,text,pos):
         self.draw = ImageDraw.Draw(self.img)
         self.draw.text(pos,text,self.colorOrange,font=self.bitmapFont)
+        
     def drawTrain(self,pos = (25,0)):
-        respT = getTrainDelay()
+        d1 = dt.now()
+        d2 = TR.getLastUpdate()
+        if isDebug:
+            print("d1:", d1)
+            print("d2:", d2)
+        if d2 != None:
+            diffTime = d1 - d2
+            if isDebug: print("diffTime-seconds", diffTime.seconds)
+            if diffTime.seconds >= 600: # 10分以上の時間差があれば、天気予報をアップデート
+                if isDebug: print('10分以上経ったから電車を更新')
+                TR.updateTrainDelay()
+        else:
+            if isDebug: print('Noneだから電車を更新')
+            TR.updateTrainDelay()
+        respT = TR.trainStatus
         retText = ''
         for train in respT[0]:
             if train == '湘南新宿ライン': retText+='S'
@@ -114,12 +130,12 @@ class dotMatrix:
             if train == '横須賀線': retText+='Y'
             if train == '京浜東北線': retText+='K'
         if retText != '':
-            pos = (64 - len(retText)*3,0)
+            pos = (64 - len(retText)*5,0)
             self.draw = ImageDraw.Draw(self.img)
             self.draw.text(pos,retText,self.colorRed,font=self.misakiFont)
 
     def drawWeather(self,pos = (0,25)):
-        d1 = datetime.now()
+        d1 = dt.now()
         d2 = WT.getLastUpdate()
         if isDebug: 
             print("d1:", d1)
@@ -128,59 +144,50 @@ class dotMatrix:
             diffTime = d1 - d2
             if isDebug: print("diffTime-seconds", diffTime.seconds)
             if diffTime.seconds >= 10800: # ３時間以上の時間差があれば、天気予報をアップデート
+                if isDebug: print('３時間以上経ったからを更新')
                 WT.update()
         else:
+            if isDebug: print('Noneだから天気を更新')
             WT.update()
         if isDebug:
-            print("LastUpdate",WT.getLastUpdate())
+            print("LastUpdate:",WT.getLastUpdate())
             print("今日の天気",WT.detail[0])
+            print("今日の最低気温",WT.temperatureMin[0])
+            print("今日の最高気温",WT.temperatureMax[0])
+            print("今日の降水確率",WT.chanceOfRain[0])
             print("明日の天気",WT.detail[1])
+            print("明日の最低気温",WT.temperatureMin[1])
+            print("明日の最高気温",WT.temperatureMax[1])
+            print("明日の降水確率",WT.chanceOfRain[1])
+                                    
+
+
         if d1.hour >= 15:
             weatherText = WT.detail[1]
+            tempText = WT.temperatureMin[1]
+            tempText += '/'+ WT.temperatureMax[1]
+            tempText += ' '+ str(WT.chanceOfRain[1]) + '%'
         else:
             weatherText = WT.detail[0]
+            tempText = WT.temperatureMin[0]
+            tempText += '/'+ WT.temperatureMax[0]
+            tempText += ' '+ str(WT.chanceOfRain[0]) + '%'
         self.draw = ImageDraw.Draw(self.img)
-        #self.draw.text(pos,weatherText,self.colorOrange,font=self.misakiFont10)
-        self.draw.text(pos,weatherText,self.colorOrange,font=self.misakiFont)
+        #self.draw.text(pos,weatherText,self.colorOrange,font=self.misakiFont)
+        #self.draw.text((0,20),tempText,self.colorOrange,font=self.misakiFont)
+        self.draw.text(pos,tempText + weatherText,self.colorOrange,font=self.misakiFont)
 
-
-    def drawTemp(self,pos = (0,25)):
-        d = datetime.today()
-        def outputText():
-            respW = getWether('140010')
-            #respT = getTrainDelay()
-            day = respW['day']
-            message = respW['message']
-            telop = respW['telop']
-            icon = '/static/wetherIcons/'+ respW['icon'] + '.png'
-            tempeMax = respW['max'] if respW['max'] != None else '-'
-            tempeMin = respW['min'] if respW['min'] != None else "-"
-            
-            self.tempText = tempeMin + " / " + tempeMax
-            #~ return self.tempText
-        
-        if self.firstTime  == 0:
-            #~ text = outputText()
-            outputText()
-            self.firstTime  = 1
-        elif int(d.strftime("%M"))%15 == 0 and d.strftime("%S") ==0:
-        #elif int(d.strftime("%M"))%15 == 0:
-            #~ text = outputText()
-            outputText()
-        self.draw = ImageDraw.Draw(self.img)
-        self.draw.text(pos,self.tempText,self.colorOrange,font=self.misakiFont)
-
-    def drawTime(self,pos = (20,10)):# pos = (24,0)
+    def drawTime(self,pos = (5,10)):# pos = (24,0)
         #~ d = datetime.datetime.today()
-        d = datetime.today()
-        timeT = d.strftime("%H:%M")
+        d = dt.today()
+        timeT = d.strftime("%H:%M:%S")
         self.draw = ImageDraw.Draw(self.img)
         for i,t in enumerate(timeT):
             self.draw.text((pos[0]+7*i,pos[1]),t,self.colorOrange,font=self.bitmapBoldFont)
 
     def drawDate(self,pos = (0,0)):
         #~ d = datetime.datetime.today()
-        d = datetime.today()
+        d = dt.today()
         monthT = d.strftime("%b")
         dayT = d.strftime("%d")
         self.draw = ImageDraw.Draw(self.img)
@@ -204,7 +211,6 @@ while True:
 
         DM.drawTime()
         DM.drawDate()
-        #DM.drawTemp()
         DM.drawTrain()
         DM.drawWeather()
         if SS.checkStatus() == 0: DM.clearCanvas() #

@@ -1,43 +1,72 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-import urllib.request, urllib.error
+isDebug = True
+#import urllib.request, urllib.error
+import requests
+from bs4 import BeautifulSoup
 import sys
 import json
-from datetime import datetime
+from datetime import datetime as dt
 import pdb
 
-def getTrainDelay(target=[u'湘南新宿ライン',u'東海道線',u'横須賀線',u'京浜東北線']):
-    retList = []
-    retText = ""
-    retval = []
-    try:
-      #resp = urllib.request.urlopen('https://rti-giken.jp/fhc/api/train_tetsudo/delay.json').read()
-      resp = urllib.request.urlopen('https://tetsudo.rti-giken.jp/free/delay.json').read()
-    except:
-        resp =  ''
+class train:
+    def __init__(self):
+        self.dicUrls={}
+        self.dicUrls['東海道線'] = 'https://transit.yahoo.co.jp/diainfo/27/0'
+        self.dicUrls['京浜東北線'] = 'https://transit.yahoo.co.jp/diainfo/22/0'
+        self.dicUrls['湘南新宿ライン'] = 'https://transit.yahoo.co.jp/diainfo/25/0'
+        self.dicUrls['横須賀線'] = 'https://transit.yahoo.co.jp/diainfo/29/0'
+        self.lastUpdate = None
+        self.trainStatus =[]
 
-    if resp != '':
-      #delays = json.loads(delays)
-      delays = json.loads(resp.decode('utf8'))
 
-      infoCount = 0
-      for delay in delays:
-          if delay['name'] in target:
-              retText+=delay['name'] + ', '
-              retList.append(delay['name'])
-              infoCount += 1
-      if infoCount == 0: 
-          #retText='現在関連する電車の遅延などは無いようです。'
-          retText=None
-      else:
-          retText = retText[:-2]+'の運転が遅延しているようです。'
-    return [retList,retText]
+    def isTrouble(self, url):
+        trouble_info = None
+        try:
+            res = requests.get(url)
+            res.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print("Error:{}".format(e))
+            return 9
+        else:
+            Soup = BeautifulSoup(res.text, 'html.parser')
+            if isDebug: print(Soup,'\n\n\n')
+            trouble_info = Soup.find('dd', class_='trouble')
+            if trouble_info != None:
+                return 1
+            else:
+                return 0
 
+    def updateTrainDelay(self, targets=[u'湘南新宿ライン',u'東海道線',u'横須賀線',u'京浜東北線']):
+        retList = []
+        retText = ""
+        retval = []
+        infoCount = 0
+        #if isDebug: pdb.set_trace()
+        for line in targets:
+            ret = self.isTrouble(self.dicUrls[line])
+            if ret == 1:
+                retText += line + ', '
+                retList.append(line)
+                infoCount += 1
+            elif ret == 9:
+                retList.append('-')
+        if infoCount == 0: 
+            retText='現在関連する電車の遅延などは無いようです。' if isDebug else None
+        else:
+            retText = retText[:-2]+'の運転が遅延しているようです。'
+        self.lastUpdate = dt.now()
+        #return [retList,retText]
+        self.trainStatus = [retList,retText]
+
+    def getLastUpdate(self):
+        return self.lastUpdate
 
 if __name__ == '__main__':
-
+    TR=train()
     print('**************************')
-    print(getTrainDelay())
+    print('LastUpdate: ', TR.getLastUpdate())
+    TR.updateTrainDelay()
+    print(TR.trainStatus)
     print('**************************')
 
