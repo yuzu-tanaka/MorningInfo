@@ -1,12 +1,12 @@
 [Unit]
 Description = MorningInfo の自動起動
-After=network-online.target nss-lookup.target
+After=network.target network-online.target nss-lookup.target
 
 [Service]
 ExecStart=/home/pi/MorningInfo/morningInfo.sh
-Restart=yes
+Service.RestartSec = 30
+Restart=always
 Type=simple
-
 
 [Install]
 WantedBy=multi-user.target
