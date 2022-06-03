@@ -16,6 +16,7 @@ class getWeather():
         self.temperatureMin = []
         self.temperatureMax = []
         self.chanceOfRain = []
+        self.icon = []
         self.lastUpdate = None
         if isDebug: print('最初の日時',self.lastUpdate)
     ## 最大の降水確率を返す
@@ -49,26 +50,29 @@ class getWeather():
             self.detail.append(jsonWeather["forecasts"][1]["telop"])
             # 気温
             ret = jsonWeather["forecasts"][0]["temperature"]["min"]["celsius"]
-            if ret == 'null':
-                ret = None
+            if ret == None:
+                ret = '-'
             self.temperatureMin.append(ret)
             ret = jsonWeather["forecasts"][1]["temperature"]["min"]["celsius"]
-            if ret == 'null':
-                ret = None
+            if ret == None:
+                ret = '-'
             self.temperatureMin.append(ret)
             ret = jsonWeather["forecasts"][0]["temperature"]["max"]["celsius"]
-            if ret == 'null':
-                ret = None
+            if ret == None:
+                ret = '-'
             self.temperatureMax.append(ret)
             ret = jsonWeather["forecasts"][1]["temperature"]["max"]["celsius"]
-            if ret == 'null':
-                ret = None
+            if ret == None:
+                ret = '-'
             self.temperatureMax.append(ret)
             # 降水確率（時間ごとで最大を取る）
             chanceOfRain = jsonWeather["forecasts"][0]["chanceOfRain"]
             self.chanceOfRain.append(self.getMaxChanceOfRain(chanceOfRain))
             chanceOfRain = jsonWeather["forecasts"][1]["chanceOfRain"]
             self.chanceOfRain.append(self.getMaxChanceOfRain(chanceOfRain))
+            # icon
+            self.icon.append(jsonWeather["forecasts"][0]["image"]["url"])
+            self.icon.append(jsonWeather["forecasts"][1]["image"]["url"])
 
     def getLastUpdate(self):
         return self.lastUpdate
@@ -82,9 +86,11 @@ if __name__ == '__main__':
     print("今日の最低気温",WT.temperatureMin[0])
     print("今日の最高気温",WT.temperatureMax[0])
     print("今日の降水確率",WT.chanceOfRain[0])
+    print("今日の天気アイコン",WT.icon[0])
     print("明日の天気",WT.detail[1])
     print("明日の最低気温",WT.temperatureMin[1])
     print("明日の最高気温",WT.temperatureMax[1])
     print("明日の降水確率",WT.chanceOfRain[1])
+    print("今日の天気アイコン",WT.icon[1])
 
 

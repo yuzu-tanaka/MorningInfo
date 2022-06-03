@@ -159,23 +159,21 @@ class dotMatrix:
             print("明日の最低気温",WT.temperatureMin[1])
             print("明日の最高気温",WT.temperatureMax[1])
             print("明日の降水確率",WT.chanceOfRain[1])
-                                    
-
 
         if d1.hour >= 15:
             weatherText = WT.detail[1]
-            tempText = WT.temperatureMin[1]
-            tempText += '/'+ WT.temperatureMax[1]
+            tempText = str(WT.temperatureMin[1])
+            tempText += '/'+ str(WT.temperatureMax[1])
             tempText += ' '+ str(WT.chanceOfRain[1]) + '%'
         else:
             weatherText = WT.detail[0]
-            tempText = WT.temperatureMin[0]
-            tempText += '/'+ WT.temperatureMax[0]
+            tempText = str(WT.temperatureMin[0])
+            tempText += '/'+ str(WT.temperatureMax[0])
             tempText += ' '+ str(WT.chanceOfRain[0]) + '%'
         self.draw = ImageDraw.Draw(self.img)
         #self.draw.text(pos,weatherText,self.colorOrange,font=self.misakiFont)
         #self.draw.text((0,20),tempText,self.colorOrange,font=self.misakiFont)
-        self.draw.text(pos,tempText + weatherText,self.colorOrange,font=self.misakiFont)
+        self.draw.text(pos,tempText + ' ' + weatherText,self.colorOrange,font=self.misakiFont)
 
     def drawTime(self,pos = (5,10)):# pos = (24,0)
         #~ d = datetime.datetime.today()
